@@ -175,6 +175,8 @@ class spider():
         'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36',
         }
+        if(id==0):
+            return ""
         url = "https://zhuanlan.zhihu.com/p/" + str(id)
         res = requests.get(url,headers = headers).text
         # 由于artical传送时通过html传输，使用pyquery解析数据
@@ -183,18 +185,17 @@ class spider():
         content = ""
         for x in artical:
             content += x.text()
-        a = open(store_path+"temp.txt","w",encoding = "utf-8")
+        a = open(store_path+"tmp\\"+str(id)+".txt","w",encoding = "utf-8")
         a.write(content)
         a.close()
         content = ""
-        a = open(store_path+"temp.txt","r",encoding = "utf-8")
+        a = open(store_path+"tmp\\"+str(id)+".txt","r",encoding = "utf-8")
         lines = a.readlines()
         for line in lines:
             if('css' in line):
                 continue
             content+=line
         a.close()
-        os.system("rm "+store_path+"temp.txt")
         return content
         
 
@@ -222,7 +223,7 @@ class spider():
         # 获取话题号id下面的所有内容,主爬虫函数
         times = 0   # 表示获取爬虫下面的多少页内容。一般一页内容包含10个问题或者文章或者回答
         url = "https://www.zhihu.com/api/v4/topics/21753891/feeds/top_activity?include=data%5B%3F%28target.type%3Dtopic_sticky_module%29%5D.target.data%5B%3F%28target.type%3Danswer%29%5D.target.content%2Crelationship.is_authorized%2Cis_author%2Cvoting%2Cis_thanked%2Cis_nothelp%3Bdata%5B%3F%28target.type%3Dtopic_sticky_module%29%5D.target.data%5B%3F%28target.type%3Danswer%29%5D.target.is_normal%2Ccomment_count%2Cvoteup_count%2Ccontent%2Crelevant_info%2Cexcerpt.author.badge%5B%3F%28type%3Dbest_answerer%29%5D.topics%3Bdata%5B%3F%28target.type%3Dtopic_sticky_module%29%5D.target.data%5B%3F%28target.type%3Darticle%29%5D.target.content%2Cvoteup_count%2Ccomment_count%2Cvoting%2Cauthor.badge%5B%3F%28type%3Dbest_answerer%29%5D.topics%3Bdata%5B%3F%28target.type%3Dtopic_sticky_module%29%5D.target.data%5B%3F%28target.type%3Dpeople%29%5D.target.answer_count%2Carticles_count%2Cgender%2Cfollower_count%2Cis_followed%2Cis_following%2Cbadge%5B%3F%28type%3Dbest_answerer%29%5D.topics%3Bdata%5B%3F%28target.type%3Danswer%29%5D.target.annotation_detail%2Ccontent%2Chermes_label%2Cis_labeled%2Crelationship.is_authorized%2Cis_author%2Cvoting%2Cis_thanked%2Cis_nothelp%2Canswer_type%3Bdata%5B%3F%28target.type%3Danswer%29%5D.target.author.badge%5B%3F%28type%3Dbest_answerer%29%5D.topics%3Bdata%5B%3F%28target.type%3Danswer%29%5D.target.paid_info%3Bdata%5B%3F%28target.type%3Darticle%29%5D.target.annotation_detail%2Ccontent%2Chermes_label%2Cis_labeled%2Cauthor.badge%5B%3F%28type%3Dbest_answerer%29%5D.topics%3Bdata%5B%3F%28target.type%3Dquestion%29%5D.target.annotation_detail%2Ccomment_count%3B&limit=10&after_id=0"
-        for times in range(0,5):
+        for times in range(1,5):
             text = self.get_topic_text(url)
             url = self.handle_topic_text(text)
         
@@ -269,7 +270,7 @@ class spider():
 
 
         # part2
-        file_title = open(store_path+"titles","w+",encoding = "utf-8")
+        file_title = open(store_path+"titles.txt","w+",encoding = "utf-8")
         for itemq in question_id:
             file_title.write(itemq.q_title+'\n')
         for itema in artical_id:
@@ -279,9 +280,13 @@ class spider():
         # part3, write artical
         everything = open(store_path + "all.txt","a+",encoding = "utf-8")
         for itema in artical_id:
+            art = open(store_path + itema.art_title + ".txt","w",encoding = "utf-8")
             content = self.get_artical(itema.id)
             everything.write(content)
-            everything.close()
+            art.write(content)
+            art.close()
+            print("消息{}写入完成".format(itema.id))
+        everything.close()
 
 
 
