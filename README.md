@@ -5,3 +5,5 @@
 目前完成的
 `zhihu.py`爬取一个话题下面的所有问题，文章，并借着爬取问题下面的所有回答。
 `bilibili.py`爬取b站视频下的评论。但是注意需要先获取av号。这个是用在线bv->av转换网址https://fripside.cn/BvToAv.php即可
+## 11.24
+更新zhihu.py中爬取时间的方法。重命名为zhihu_time.py因为对原先代码做了一些改动。可以输出JSON数据包到本地。包含回答、文章的url和最后一次更新时间。
