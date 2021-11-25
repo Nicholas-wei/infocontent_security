@@ -1,14 +1,12 @@
 import os
-import jieba
 from snownlp import SnowNLP
 
-# Gensim？snowNLP？
 
 data_path = "D:\\data_analysis\zhihuPJ"
 NLPd_path = "D:\\data_analysis\zhihuPJanalysis"
 
-def get_all_file(data_path):
 
+def get_all_file(data_path):
     dirs = os.listdir(data_path)
     files = []
     for dir in dirs:
@@ -16,14 +14,11 @@ def get_all_file(data_path):
         files.append(file)
     return files
 
-#for file in files:
-    # f = open(file,"r",encoding='UTF-8')
-    #cuted.append(jieba.lcut(f.read()))
-    #print(file)
+
 def snowNLP_analysis(files):
     file_num = 0
     for file in files:
-        rawf = open(file,"r",encoding='UTF-8')
+        rawf = open(file, "r", encoding='UTF-8')
         dataf = open(NLPd_path + "\\" + str(file_num) + ".txt", "w", encoding='UTF-8')
         file_num += 1
         while True:
@@ -43,10 +38,6 @@ def snowNLP_analysis(files):
         print(str(file_num) + "over！\n")
 
 
-
 if __name__ == "__main__":
     files = get_all_file(data_path)
     snowNLP_analysis(files)
-
-
-
