@@ -4,41 +4,49 @@ from snownlp import SnowNLP
 
 # Gensim？snowNLP？
 
-path = "D:\\data_analysis\zhihuPJ"
+data_path = "D:\\data_analysis\zhihuPJ"
+NLPd_path = "D:\\data_analysis\zhihuPJanalysis"
 
+def get_all_file(data_path):
 
-def get_all_file(path):
-
-    dirs = os.listdir(path)
+    dirs = os.listdir(data_path)
     files = []
     for dir in dirs:
-        file = path+ "\\" + str(dir)
+        file = data_path + "\\" + str(dir)
         files.append(file)
     return files
 
-#def cut_all_file(files):
-cuted = []
-files = get_all_file(path)
 #for file in files:
     # f = open(file,"r",encoding='UTF-8')
     #cuted.append(jieba.lcut(f.read()))
     #print(file)
+def snowNLP_analysis(files):
+    file_num = 0
+    for file in files:
+        rawf = open(file,"r",encoding='UTF-8')
+        dataf = open(NLPd_path + "\\" + str(file_num) + ".txt", "w", encoding='UTF-8')
+        file_num += 1
+        while True:
+            line = rawf.readline()
+            if not line:
+                break
+            lines = line.strip().split("，")
+            for sentence in lines:
+                if sentence == '':
+                    continue
+                NLPdata = SnowNLP(sentence)
+                seg_words = ""
+                for word in NLPdata.words:
+                    seg_words += "_"
+                    seg_words += word
+                dataf.write(sentence + "\t" + seg_words + "\t" + str(NLPdata.sentiments) + "\n")
+        print(str(file_num) + "over！\n")
 
-f = open(files[3],"r",encoding='UTF-8')
-while True:
-    line = f.readline()
-    if not line:
-        break
-    lines = line.strip().split("，")
-    for sentence in lines:
-        NLPdata = SnowNLP(sentence)
-        seg_words = ""
-        for word in NLPdata.words:
-            seg_words += "_"
-            seg_words += word
-        print(sentence + "\t" + seg_words + "\t" + str(NLPdata.sentiments) + "\n")
 
-#for x in NLPdata.words:
 
-#NLPdata = SnowNLP(data)
-#print(NLPdata)
+if __name__ == "__main__":
+    files = get_all_file(data_path)
+    snowNLP_analysis(files)
+
+
+
