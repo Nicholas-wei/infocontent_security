@@ -7,7 +7,7 @@ from pyquery import PyQuery as pq
 
 
 
-store_path = "E:\\zhihuPJ\\"
+store_path = "D:\data_analysis\Time\\"
 
 
 class timeunit():
@@ -306,10 +306,13 @@ class spider():
         #everything.close()
 
 
+
     def get_time(self):
         # part4 get answer time, always the create time of answer time
         # found the create time is the second fron 1970
-        file = open(store_path + "11.24.txt","a+",encoding = "utf-8")
+        # LDY motified: 313(txt->json)\314\322
+        file = open(store_path + "11.24.json", "w",encoding = "utf-8")
+        file.write('[')
         for itemt in time_unit:
             tmp_list = []
             tmp_list.append(str(itemt.id_url))
@@ -317,8 +320,12 @@ class spider():
             keys = ["url_id","update_time"]
             temp_dic = dict(zip(keys,tmp_list))
             data = json.dumps(temp_dic)
-            file.write(data+'\n')
+            if itemt != time_unit[-1]:
+                file.write(data+',')
+            else:
+                file.write(data)
             print("写入{}创建时间完成".format(itemt.id_url))
+        file.write(']')
         file.close()
 
 
