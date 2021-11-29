@@ -7,7 +7,7 @@ from pyquery import PyQuery as pq
 
 
 
-store_path = "E:\\ZhuhuPJ2\\"
+store_path = "E:\\ZhuhuPJ2\\11.29\\"
 ANSWER_PAGE = 20 # 设置为5即表示爬取每个问题下面5*20=100页回答，一页回答大概有10条，以此类推
 TOPIC_PAGE = 10 # 设置成1表示爬取每个话题下面的第一页的所有问题，将会递归爬取回答。一个TOPIC_PAGE下面大致有8个问题，5个文章左右
 
@@ -44,7 +44,9 @@ def filter_content(text,limit=20):
         answer_time = jsonobj['data'][i]['created_time']
         update_time = jsonobj['data'][i]['updated_time']
         gender = jsonobj['data'][i]['author']['gender']
-        url = jsonobj['data'][i]['url']
+        # url = jsonobj['data'][i]['url']
+        # 将url修改为问题的url而不是回答的url
+        url = jsonobj['data'][i]['question']['url']
         # 设置正则过滤<p></p>标签
         res_tr = r'<p data-pid="........">(.*?)</p>'
         result =  re.findall(res_tr,answer,re.S|re.M)
@@ -322,6 +324,8 @@ class spider():
             name = name.replace("\"","")
             name = name.replace("<","")
             name = name.replace(">","")
+            name = name.replace("、","")
+            name = name.replace("?","")
             filename = store_path + str(name) + ".txt"
             
             self.get_Answers(item.qid,filename,item.q_title)
@@ -345,6 +349,7 @@ class spider():
         ## part3, write artical
         everything = open(store_path + "all2.txt","a+",encoding = "utf-8")
         for itema in artical_id:
+            itema.art_title = itema.art_title.replace("|","-")
             art = open(store_path + itema.art_title + ".txt","w",encoding = "utf-8")
             content = self.get_artical(itema.id)
             everything.write(content)
@@ -414,6 +419,9 @@ class spider():
             answers=filter_content(text)
             # 以下部分写入文件，如果测试爬取时间就不用写入
         # 写完20个内容就写入文件
+            path.replace("?","")
+            path.replace("、","")
+
             fout=open(path,"a+",encoding="utf-8")
             for item in answers:
                 if(len(item.ans_content)==0):
