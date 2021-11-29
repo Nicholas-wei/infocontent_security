@@ -7,29 +7,81 @@ from pyquery import PyQuery as pq
 
 
 
-store_path = "E:\\zhihuPJ\\"
+store_path = "E:\\ZhuhuPJ2\\"
+ANSWER_PAGE = 20 # 设置为5即表示爬取每个问题下面5*20=100页回答，一页回答大概有10条，以此类推
+TOPIC_PAGE = 10 # 设置成1表示爬取每个话题下面的第一页的所有问题，将会递归爬取回答。一个TOPIC_PAGE下面大致有8个问题，5个文章左右
 
+class timeunit():
+    # answer或者artical的id，用网址来表示
+    id_url = 0
+    # answer的时间
+    create_time = 0
+
+global time_unit
+time_unit = [timeunit()]
+
+
+class answerunit():
+    ans_content = ""
+    ans_create_time = ""
+    ans_update_time = ""
+    gender = 0
+    url = ""
 
 
 
 
 def filter_content(text,limit=20):
     # 从响应数据中提取
-    ret=[]
+    answer_unit = [answerunit()]
+    answer_unit.clear()
     jsonobj = json.loads(text)
     limit=len(jsonobj['data'])
     for i in range(0,limit):
+        answer = ""
+        answerclass = answerunit()
         answer = jsonobj['data'][i]['content']
+        answer_time = jsonobj['data'][i]['created_time']
+        update_time = jsonobj['data'][i]['updated_time']
+        gender = jsonobj['data'][i]['author']['gender']
+        url = jsonobj['data'][i]['url']
         # 设置正则过滤<p></p>标签
         res_tr = r'<p data-pid="........">(.*?)</p>'
         result =  re.findall(res_tr,answer,re.S|re.M)
+        _result=''.join((str(a) for a in result))
+        res_tr2 = r'<a[^>]*>|</a>$'
+        result2 =  re.sub(res_tr2,"",_result)
+        res_tr3 = r'<b[^>]*>|</b>$'
+        res_tr4 = r'<br[^>]*>|</br>$'
+        res_tr5 = r'<span[^>]*>|</span>$'
+        result2 =  re.sub(res_tr3,"",result2)
+        result2 =  re.sub(res_tr4,"",result2)
+        result2 =  re.sub(res_tr5,"",result2)
+        result2 = result2.replace("</br>","")
+        result2 = result2.replace("</b>","")
+        result2 = result2.replace("【图片】","")
+        result2 = result2.replace("</span>","")
+        result2 = result2.replace("</a>","")
         if(len(answer)==0):
             continue
         else:
-            string=''.join((str(a) for a in result))
-            ret.append(string)
+            string=''.join((str(a) for a in result2))
+            string = string.replace("$","")
+            # ret.append(string)
             # print(string)
-    return ret
+            answerclass.ans_content = string
+            answerclass.ans_create_time = "$" + str(answer_time)
+            answerclass.gender = str(gender)
+            answerclass.url = url
+            answerclass.ans_update_time = str(update_time)
+        #tmp_time_unit = timeunit()
+        #tmp_time_unit.create_time = jsonobj['data'][i]['updated_time']
+        #tmp_time_unit.id_url = jsonobj['data'][i]['url']
+        #time_unit.append(tmp_time_unit)
+        answer_unit.append(answerclass)
+        print("寻找%s相关内容完成"%url)
+
+    return  answer_unit
 
 
 
@@ -92,6 +144,7 @@ class spider():
         # 爬取信息，默认为20条
         # offset表示当前回答是第几个回答,limit表示一次获取的回答数量
         headers = {'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0"}
+        # 472589697
         url = "https://www.zhihu.com/api/v4/questions/{}/answers?include=content&limit={}&offset={}&platform=desktop&sort_by=default".format(id, limit,offset)
         res = requests.get(url,headers=headers)
         if res.status_code!=200:
@@ -151,6 +204,10 @@ class spider():
                 tmp.name = auth
                 tmp.id = id
                 artical_id.append(tmp)
+                tmp_time_unit = timeunit()
+                tmp_time_unit.create_time = create_time
+                tmp_time_unit.id_url = url
+                time_unit.append(tmp_time_unit)
 
 
             elif type == 'question':
@@ -223,7 +280,7 @@ class spider():
         # 获取话题号id下面的所有内容,主爬虫函数
         times = 0   # 表示获取爬虫下面的多少页内容。一般一页内容包含10个问题或者文章或者回答
         url = "https://www.zhihu.com/api/v4/topics/21753891/feeds/top_activity?include=data%5B%3F%28target.type%3Dtopic_sticky_module%29%5D.target.data%5B%3F%28target.type%3Danswer%29%5D.target.content%2Crelationship.is_authorized%2Cis_author%2Cvoting%2Cis_thanked%2Cis_nothelp%3Bdata%5B%3F%28target.type%3Dtopic_sticky_module%29%5D.target.data%5B%3F%28target.type%3Danswer%29%5D.target.is_normal%2Ccomment_count%2Cvoteup_count%2Ccontent%2Crelevant_info%2Cexcerpt.author.badge%5B%3F%28type%3Dbest_answerer%29%5D.topics%3Bdata%5B%3F%28target.type%3Dtopic_sticky_module%29%5D.target.data%5B%3F%28target.type%3Darticle%29%5D.target.content%2Cvoteup_count%2Ccomment_count%2Cvoting%2Cauthor.badge%5B%3F%28type%3Dbest_answerer%29%5D.topics%3Bdata%5B%3F%28target.type%3Dtopic_sticky_module%29%5D.target.data%5B%3F%28target.type%3Dpeople%29%5D.target.answer_count%2Carticles_count%2Cgender%2Cfollower_count%2Cis_followed%2Cis_following%2Cbadge%5B%3F%28type%3Dbest_answerer%29%5D.topics%3Bdata%5B%3F%28target.type%3Danswer%29%5D.target.annotation_detail%2Ccontent%2Chermes_label%2Cis_labeled%2Crelationship.is_authorized%2Cis_author%2Cvoting%2Cis_thanked%2Cis_nothelp%2Canswer_type%3Bdata%5B%3F%28target.type%3Danswer%29%5D.target.author.badge%5B%3F%28type%3Dbest_answerer%29%5D.topics%3Bdata%5B%3F%28target.type%3Danswer%29%5D.target.paid_info%3Bdata%5B%3F%28target.type%3Darticle%29%5D.target.annotation_detail%2Ccontent%2Chermes_label%2Cis_labeled%2Cauthor.badge%5B%3F%28type%3Dbest_answerer%29%5D.topics%3Bdata%5B%3F%28target.type%3Dquestion%29%5D.target.annotation_detail%2Ccomment_count%3B&limit=10&after_id=0"
-        for times in range(1,5):
+        for times in range(0,TOPIC_PAGE):
             text = self.get_topic_text(url)
             url = self.handle_topic_text(text)
         
@@ -252,24 +309,32 @@ class spider():
 
         # part1,part of part3
         
-        #everything = open(store_path + "all.txt","a+",encoding = "utf-8")
-        #for item in question_id:
-        #    if(item.qid==0):
-        #        continue
-        #    name = item.q_title.replace("？","")
-        #    filename = store_path + str(name) + ".txt"
+        everything = open(store_path + "all2.txt","a+",encoding = "utf-8")
+        for item in question_id:
+            if(item.qid==0):
+                continue
+            name = item.q_title.replace("？","")
+            name = name.replace("|","-")
+            name = name.replace("\\","")
+            name = name.replace("/","")
+            name = name.replace(":","")
+            name = name.replace("*","")
+            name = name.replace("\"","")
+            name = name.replace("<","")
+            name = name.replace(">","")
+            filename = store_path + str(name) + ".txt"
             
-        #    self.get_Answers(item.qid,filename,item.q_title)
-        #    # 写入everything文件
-        #    question = open(filename,"r",encoding = "utf-8")
-        #    content = question.readlines()
-        #    for _ in content:
-        #        everything.write(_+"\n")
-        #everything.close()
+            self.get_Answers(item.qid,filename,item.q_title)
+            # 写入everything文件
+            question = open(filename,"r",encoding = "utf-8")
+            content = question.readlines()
+            for _ in content:
+                everything.write(_+"\n")
+        everything.close()
         
 
 
-        # part2
+        ## part2
         file_title = open(store_path+"titles.txt","w+",encoding = "utf-8")
         for itemq in question_id:
             file_title.write(itemq.q_title+'\n')
@@ -277,19 +342,35 @@ class spider():
             file_title.write(itema.art_title+'\n')
         file_title.close()
 
-        # part3, write artical
-        everything = open(store_path + "all.txt","a+",encoding = "utf-8")
+        ## part3, write artical
+        everything = open(store_path + "all2.txt","a+",encoding = "utf-8")
         for itema in artical_id:
             art = open(store_path + itema.art_title + ".txt","w",encoding = "utf-8")
             content = self.get_artical(itema.id)
             everything.write(content)
             art.write(content)
             art.close()
-            print("消息{}写入完成".format(itema.id))
+            print("文章{}写入完成".format(itema.id))
         everything.close()
 
 
+    def get_time(self):
+        # part4 get answer time, always the create time of answer time
+        # found the create time is the second fron 1970
+        file = open(store_path + "11.25.txt","a+",encoding = "utf-8")
+        for itemt in time_unit:
+            tmp_list = []
+            tmp_list.append(str(itemt.id_url))
+            tmp_list.append(str(itemt.create_time))
+            keys = ["url_id","update_time"]
+            temp_dic = dict(zip(keys,tmp_list))
+            data = json.dumps(temp_dic)
+            file.write(data+'\n')
+            print("写入{}创建时间完成".format(itemt.id_url))
+        file.close()
 
+
+       
 
 
     def filter_search_questions(self,text):
@@ -310,7 +391,7 @@ class spider():
                 tmp_keywordResult.askergender = jsonobj_q["author"]["gender"]
                 tmp_keywordResult.askerinfoURL=jsonobj_q["author"]["url"]
                 
-
+    
     
     def get_Search(self,keyword,path):
         text = self.search_questions(keyword,0,20)
@@ -324,22 +405,27 @@ class spider():
     def get_Answers(self,questionID,path,question_title):
         # 对crawl的一个封装，获取所有answer并保存在本地
         # answer_array=[]
-        for m in range(20):
-            for offset in range(m*20,m*20+20):
-                text = self.crawl(id=questionID,offset=offset)
-                text=filter_content(text)
-            # 写完20个内容就写入文件
-                fout=open(path,"a+",encoding="utf-8")
-                for i in range(len(text)):
-                    tmp_text = str(text[i]).replace("<b>"," ")
-                    tmp_text = tmp_text.replace("<a>","")
-                    tmp_text = tmp_text.replace("</a>"," ")
-                    tmp_text = tmp_text.replace("</b>","")
-                    tmp_text = tmp_text.replace("<br>"," ")
-                    tmp_text = tmp_text.replace("</br>"," ")
-                    fout.write("\n\n"+str(tmp_text))
-                fout.close()
-            print("问题{}写入完成"%question_id)
+        for m in range(0,ANSWER_PAGE):
+        # for offset in range(m*20,m*20+20): #bad bug
+            offset = 20 * m
+            answers = [answerunit()]
+            answers.clear()
+            text = self.crawl(id=questionID,offset=offset)
+            answers=filter_content(text)
+            # 以下部分写入文件，如果测试爬取时间就不用写入
+        # 写完20个内容就写入文件
+            fout=open(path,"a+",encoding="utf-8")
+            for item in answers:
+                if(len(item.ans_content)==0):
+                    continue
+                fout.write(item.ans_create_time+"\n")
+                fout.write(item.ans_update_time+"\n")
+                fout.write(str(item.gender)+"\n")
+                fout.write(item.url+"\n")
+                fout.write(item.ans_content+"\n")
+            fout.close()
+            print("问题写入部分完成")
+        print("问题写入完成")
 
 
 
@@ -365,5 +451,6 @@ if __name__ == "__main__":
 
     # 测试总爬取
     topic_id = 21753891
-    sp.main_crawl(id)
+    sp.main_crawl(topic_id)
+    # sp.get_time()
 
