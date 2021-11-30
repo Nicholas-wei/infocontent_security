@@ -20,4 +20,4 @@
 
 ## 11.30
 更新`data`下面的数据文件</br>
-新增word2vec分析知乎回答数据，结果输出新词、相关度高词toplist,相关度低词toplist
+新增`word2vec_zhihu.py`分析知乎回答数据，结果输出新词、相关度高词toplist,相关度低词toplist
