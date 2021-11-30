@@ -1,4 +1,5 @@
 import requests
+import os
 from pyquery import PyQuery as pq
 from bs4 import BeautifulSoup
 
@@ -29,26 +30,25 @@ class spider_bili():
         for x in page_object:
             content+=x.text()
         
-
-
-
-
     def getReview(self,path,original_url,id):
+        comments.clear()
         file = open(path+str(id)+".txt","w+",encoding = "utf-8")
-        for page in range(0,50):   
+        for page in range(0,50):
             url = original_url + str(page)
             print(url)
-            try:
-                html = requests.get(url, headers=header)
-                data = html.json()
-                if data['data']['replies']:
-                    for _ in data['data']['replies']:
-                        comments.append(_['content']['message'])
-                        
-            for item in comments:
-                file.write(str(item)+'\n')
-            print("page%d完成写入"%page)
+            html = requests.get(url, headers=header)
+            data = html.json()
+            if data['data']['replies']:
+                for _ in data['data']['replies']:
+                    comments.append(_['content']['message'])        
+                for item in comments:
+                    # print(item)
+                    file.write(str(item)+'\n')
+                    # os.system("pause")
+                print("page%d完成写入"%page)
+                comments.clear()
         file.close()
+
 
 
 
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     sp = spider_bili()
     
     store_path = path
-    for i in range(6,9):
+    for i in range(4,9):
         my_oid = oid[i]
         original_url = "https://api.bilibili.com/x/v2/reply?jsonp=jsonp&type=1&oid="+str(my_oid)+"&sort=2&pn="
         sp.getReview(store_path,original_url,my_oid)
