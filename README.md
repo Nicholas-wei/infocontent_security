@@ -21,3 +21,7 @@
 ## 11.30
 更新`data`下面的数据文件</br>
 新增`word2vec_zhihu.py`分析知乎回答数据，结果输出新词、相关度高词toplist,相关度低词toplist
+
+## 12.01
+更新了 `newNLP.py` 文件，利用 `jieba` `Counter` 实现分词性的（n,v,a）词频统计分析。
+由于元宇宙的情感分析客观读不佳，将 `NLP_analysis.py` 改用为分析  `bilibili` 数据的情感态度。

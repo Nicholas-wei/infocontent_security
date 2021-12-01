@@ -2,8 +2,8 @@ import os
 from snownlp import SnowNLP
 
 
-data_path = "D:\\data_analysis\zhihuPJ"
-NLPd_path = "D:\\data_analysis\zhihuPJanalysis"
+data_path = "D:\\data_analysis\\bili"
+NLPd_path = "D:\\data_analysis\\bilianalysis"
 
 def check_meta(file):
     f = open(file,"r",encoding='UTF-8')
@@ -58,10 +58,11 @@ def sentiment_analysis(NLPfiles):
     bad = 0
     average = 0.0
     n = 0
+    sentimentf = NLPd_path + "\\" + "sentiment.txt"
+    sentimentf = open(sentimentf,"w",encoding='UTF-8')
     for nlpfile in NLPfiles:
         rawf = open(nlpfile,"r",encoding='UTF-8')
-        sentimentf = NLPd_path + "\\" + "sentiment.txt"
-        sentimentf = open(sentimentf,"w",encoding='UTF-8')
+
         while True:
             line = rawf.readline()
             if not line:
@@ -77,7 +78,7 @@ def sentiment_analysis(NLPfiles):
         result = "average:" + str(average/n) + " good:" + str(good) + " bad:" + str(bad)
         print("Sentiment Analysis...,this file's average:" + str(average/n) + " over！\n")
         n = good = bad = average = 0
-        sentimentf.write(result)
+        sentimentf.write(result + "\n")
 
 
 
