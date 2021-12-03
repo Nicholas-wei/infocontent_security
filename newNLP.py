@@ -4,6 +4,7 @@ import time
 import jieba
 import jieba.posseg as pseg
 from collections import Counter
+import re
 # 性别1是男，-1是女，这个也可以搞一个图出来
 
 class data:
@@ -14,7 +15,7 @@ class data:
 
 data_path = "D:\\data_analysis\\11.27"
 NLPd_path = "D:\\data_analysis\\zhihuPJanalysis\\"
-
+stoplist= ['',',','，','。','.','#','!','~','%','^','&','*',' ','、','\'','’','"','@']
 # 检查是否为回答，不是则是文章
 def check_answer(file):
     f = open(file,'r',encoding='UTF-8')
@@ -90,8 +91,6 @@ def time_answers(answers):
 def cut(answers,articles):
     outputf = open(NLPd_path + 'jieba.txt','w',encoding='UTF-8')
     jieba_data = []
-    jieba.load_userdict("D:\\data_analysis\\zhihuPJanalysis\\jiebadata.txt")
-    stoplist= ['',',','，','。','.','#','!','~','%','^','&','*',' ','、','\'','’','"','@']
     for answer in answers:
         jieba_data.append(answer['answer'])
     for article in articles:
@@ -99,6 +98,7 @@ def cut(answers,articles):
     cut_data = []
     n_data = []
     v_data = []
+    a_data = []
     for data in jieba_data:
         rawdata = jieba.lcut(str(data))
         splitdata = pseg.cut(str(data))
@@ -107,11 +107,13 @@ def cut(answers,articles):
                 n_data.append(word)
             if flag[0] == 'v':
                 v_data.append(word)
+            if flag[0] == 'a':
+                a_data.append(word)
         for word in rawdata:
             if word not in stoplist:
                 cut_data.append(word)
                 outputf.write(word.__str__() + ' ')
-    return n_data,v_data
+    return cut_data,n_data,v_data,a_data
 
 
 # 用 Counter 进行词性的词频统计
@@ -121,6 +123,33 @@ def word_num(data,flag):
     f = open(NLPd_path + flag + '_num.txt','w',encoding='UTF-8')
     f.write(outputwords_sorted.__str__())
 
+def HOT_analysis(answers):
+    dates = []
+    for answer in answers:
+        dates.append(re.split(r' +',time.ctime(int(answer['create time']))))
+        num = 0
+    datas = []
+    i = 0
+    j = 0
+    while i<len(answers):
+        tmp = []
+        while j < len(answers):
+            if dates[i][0] == dates[j][0] and dates[i][1] == dates[j][1]:
+                splitdata = pseg.cut(answers[j]['answer'])
+                for word,flag in splitdata:
+                    if flag[0] == 'n':
+                        tmp.append(word)
+                j += 1
+            else:
+                datas.append({'time':dates[i],'answer':tmp})
+                i = j
+                break
+        if(j == len(answers)):
+            break
+    for data in datas:
+        word_num(data['answer'],data['time'])
+
+
 
 # 主要处理函数，用到了上面的所有辅助函数
 def snowNLP_analysis(files):
@@ -128,17 +157,19 @@ def snowNLP_analysis(files):
     articles = []
     for file in files:
         get_data(file,answers,articles)
-
+        break
     answers = sorted(answers,key=lambda tm:(tm['create time']))
-
+    HOT_analysis(answers)
     time_answers(answers)
 
-    n_data,v_data = cut(answers,articles)
-
+    cut_data,n_data,v_data,a_data = cut(answers,articles)
+    word_num(cut_data,'all')
     word_num(n_data,'n')
     word_num(v_data,'v')
+    word_num(a_data,'a')
 
 
 if __name__ == "__main__":
+    jieba.load_userdict("D:\\data_analysis\\zhihuPJanalysis\\jiebadata.txt")
     files = get_all_file(data_path)
     snowNLP_analysis(files)
