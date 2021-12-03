@@ -15,6 +15,7 @@ class data:
 
 data_path = "D:\\data_analysis\\11.27"
 NLPd_path = "D:\\data_analysis\\zhihuPJanalysis\\"
+TIME_path = "D:\\data_analysis\\zhihuPJanalysis\\time\\"
 stoplist= ['',',','，','。','.','#','!','~','%','^','&','*',' ','、','\'','’','"','@']
 # 检查是否为回答，不是则是文章
 def check_answer(file):
@@ -120,8 +121,20 @@ def cut(answers,articles):
 def word_num(data,flag):
     cutwords = dict(Counter(data))
     outputwords_sorted = sorted(cutwords.items(), key= lambda x : x[1], reverse=True)[:500]
-    f = open(NLPd_path + str(flag) + '_num.txt','w',encoding='UTF-8')
+    f = open(TIME_path + str(flag) + '_num.txt','w',encoding='UTF-8')
     f.write(outputwords_sorted.__str__())
+
+
+# 用 Counter 进行词性的词频统计
+def word_num_2(datas):
+    f = open(TIME_path + 'time_num.txt','w',encoding='UTF-8')
+    for data in datas:
+        cutwords = dict(Counter(data['answer']))
+        outputwords_sorted = sorted(cutwords.items(), key= lambda x : x[1], reverse=True)[:500]
+        f.write(data['time'].__str__())
+        f.write(outputwords_sorted.__str__())
+        f.write('\n')
+
 
 def HOT_analysis(answers):
     dates = []
@@ -146,8 +159,7 @@ def HOT_analysis(answers):
                 break
         if(j == len(answers)):
             break
-    for data in datas:
-        word_num(data['answer'],data['time'])
+    word_num_2(datas)
 
 
 
@@ -157,16 +169,17 @@ def snowNLP_analysis(files):
     articles = []
     for file in files:
         get_data(file,answers,articles)
-        break
-    answers = sorted(answers,key=lambda tm:(tm['create time']))
-    HOT_analysis(answers)
-    time_answers(answers)
 
-    cut_data,n_data,v_data,a_data = cut(answers,articles)
-    word_num(cut_data,'all')
-    word_num(n_data,'n')
-    word_num(v_data,'v')
-    word_num(a_data,'a')
+    answers = sorted(answers,key=lambda tm:(tm['create time']))
+
+    HOT_analysis(answers)
+    #time_answers(answers)
+
+    #cut_data,n_data,v_data,a_data = cut(answers,articles)
+    #word_num(cut_data,'all')
+    #word_num(n_data,'n')
+    #word_num(v_data,'v')
+    #word_num(a_data,'a')
 
 
 if __name__ == "__main__":
