@@ -120,7 +120,7 @@ def cut(answers,articles):
 def word_num(data,flag):
     cutwords = dict(Counter(data))
     outputwords_sorted = sorted(cutwords.items(), key= lambda x : x[1], reverse=True)[:500]
-    f = open(NLPd_path + flag + '_num.txt','w',encoding='UTF-8')
+    f = open(NLPd_path + str(flag) + '_num.txt','w',encoding='UTF-8')
     f.write(outputwords_sorted.__str__())
 
 def HOT_analysis(answers):
