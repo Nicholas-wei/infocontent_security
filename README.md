@@ -1,7 +1,8 @@
 # infocontent_security
 信息系统安全的课程PJ
-关于元宇宙的高频词、情感分析————以知乎、b站评论为例
-报告：https://shimo.im/docs/rccpy6jd8wdvwPCW
+关于元宇宙的高频词、情感分析————以知乎、b站评论为例</br>
+PJ报告：https://shimo.im/docs/rccpy6jd8wdvwPCW
+</br>报告中包含了代码的编写思路和可视化图表，以及数据分析
 ## 代码说明
 ### 数据爬取部分
 - `Zhihu.py`</br>
